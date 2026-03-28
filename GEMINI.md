@@ -1,10 +1,17 @@
-# CLAUDE.md
+# GEMINI.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Gemini Code (gemini.ai/code) when working with code in this repository.
 
 ## Project
 
-`sre-agent` is a RAG-based SRE (Site Reliability Engineering) agent, developed as a thesis project for the Master's in AI at AUAX university.
+`sre-agent` is a Kubernetes SRE (Site Reliability Engineering) agent, developed as a thesis project for the Master's in AI at AUAX university. It employs a ReAct (Reasoning and Acting) Agent architecture backed by a RAG pipeline to diagnose cluster incidents autonomously using official runbooks as the ground truth.
+
+### Infrastructure & Scope
+
+- **Deployment**: Designed to run on Kubernetes (Kind).
+- **Integrations**: Consumes the K8s API to fetch logs and events, and integrates with monitoring solutions (e.g., Prometheus) to react to microservice metrics.
+- **Technical Scope**: Prioritizes automated root-cause analysis and producing SRE reports. Corrective actions are planned for a subsequent phase.
+- **Academic Goals**: Success is measured by Diagnostic Precision and MTTR (Mean Time To Resolution) reduction.
 
 ## Stack
 

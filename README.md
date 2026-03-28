@@ -4,6 +4,22 @@ Proof of Concept for a RAG-based (Retrieval-Augmented Generation) SRE agent, dev
 
 The system ingests SRE runbooks in Markdown format, splits them into semantically coherent chunks, generates embeddings with OpenAI, and stores them in a vector database (ChromaDB). Given an error or log input, it retrieves the most relevant runbook context to assist in incident diagnosis and resolution.
 
+## Core Objectives & Scope
+
+1. **Core Objective**: A ReAct (Reasoning and Acting) Agent that autonomously investigates Kubernetes incidents, using the official runbooks as its source of truth.
+2. **Infrastructure**: The agent is deployed within a Kubernetes cluster (Kind/Minikube) with direct access to the K8s API for logs/events, and connects to monitoring systems (e.g., Prometheus) to react to microservice metrics.
+3. **Technical Scope**:
+   - **Automatic Analysis and Diagnosis** (High Priority)
+   - **Generation of Detailed SRE Reports** (High Priority)
+   - **Execution of Corrective Actions** (Nice-to-have / Future Phase)
+
+## Academic Evaluation
+
+The success of this Master's Thesis will be evaluated based on the following metrics:
+
+- **Diagnostic Precision**: Accuracy of the automated diagnosis compared to human-led investigations.
+- **MTTR Reduction**: The potential decrease in Mean Time To Resolution by automating the initial triage, log gathering, and runbook correlation.
+
 ## Prerequisites
 
 - [Mamba](https://mamba.readthedocs.io/) (or Conda)

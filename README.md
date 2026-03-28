@@ -27,7 +27,7 @@ mamba activate sre-agent
 
 Create a `.env` file in the project root with your OpenAI API key:
 
-```
+```env
 OPENAI_API_KEY=sk-...
 ```
 
@@ -45,7 +45,7 @@ python -m src.ingest
 
 Expected output:
 
-```
+```bash
 Loaded 3 documents, split into N chunks.
 Vectorstore persisted to /path/to/project/vectorstore
 ```
@@ -56,13 +56,14 @@ Pass an error or log line as an argument and the system returns the most relevan
 
 ```bash
 python -m src.query "ECONNREFUSED error on port 5432 in production logs"
+python -m src.query "The latency surpasses the SLO threholds"
 ```
 
 If no argument is provided, a default example query is used.
 
 ## Project Structure
 
-```
+```bash
 sre-agent/
 ├── environment.yml         # Mamba environment (Python 3.11 + dependencies)
 ├── .env                    # OpenAI API key (not versioned)
@@ -79,16 +80,16 @@ sre-agent/
 
 ## Required API Keys
 
-| Service | Environment Variable | Purpose |
-|---------|---------------------|---------|
-| OpenAI  | `OPENAI_API_KEY`    | Embedding generation using the `text-embedding-3-small` model |
+| Service | Environment Variable | Purpose                                                       |
+|---------|----------------------|-------------------------------------------------------------- |
+| OpenAI  | `OPENAI_API_KEY`     | Embedding generation using the `text-embedding-3-small` model |
 
 ## Main Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `langchain` | Orchestration framework for RAG pipelines |
-| `langchain-openai` | OpenAI integration (embeddings) |
+| Package               | Purpose                                                         |
+| --------------------- | --------------------------------------------------------------- |
+| `langchain`           | Orchestration framework for RAG pipelines                       |
+| `langchain-openai`    | OpenAI integration (embeddings)                                 |
 | `langchain-community` | Loaders (DirectoryLoader, TextLoader) and vectorstores (Chroma) |
-| `chromadb` | Local vector database with on-disk persistence |
-| `python-dotenv` | Load environment variables from `.env` |
+| `chromadb`            | Local vector database with on-disk persistence                  |
+| `python-dotenv`       | Load environment variables from `.env`                          |

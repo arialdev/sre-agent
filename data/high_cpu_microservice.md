@@ -1,9 +1,11 @@
 # Runbook: High CPU Usage in Microservice
 
 ## Severity
+
 P2 - High
 
 ## Symptoms
+
 - CPU utilization exceeds 90% for more than 5 minutes on one or more pods.
 - Response latency (p99) increases significantly, often exceeding SLO thresholds.
 - Kubernetes HPA triggers autoscaling but new pods also saturate quickly.
@@ -11,6 +13,7 @@ P2 - High
 - Thread pool exhaustion warnings appear in application logs.
 
 ## Diagnosis Steps
+
 1. Identify the affected pods: `kubectl top pods -n <namespace> --sort-by=cpu`.
 2. Check if the spike correlates with a recent deployment: `kubectl rollout history deployment/<service>`.
 3. Capture a CPU profile: for Go services use `pprof`, for Java use `async-profiler` or `jstack`.
@@ -20,6 +23,7 @@ P2 - High
 7. Check for garbage collection pressure (JVM): `kubectl exec <pod> -- jstat -gcutil <pid> 1000`.
 
 ## Resolution Steps
+
 1. If caused by a bad deployment, roll back: `kubectl rollout undo deployment/<service>`.
 2. If caused by a traffic spike, scale horizontally: `kubectl scale deployment/<service> --replicas=<N>`.
 3. If caused by an expensive query or hot loop, apply the code fix and deploy.
@@ -28,6 +32,7 @@ P2 - High
 6. After mitigation, verify CPU returns to baseline on the Grafana dashboard.
 
 ## Prevention / Monitoring
+
 - Set CPU alerts at 80% sustained for 3 minutes to catch issues before user impact.
 - Require load testing for any code change that modifies hot paths or data processing logic.
 - Include CPU profiling in the CI pipeline for performance-critical services.

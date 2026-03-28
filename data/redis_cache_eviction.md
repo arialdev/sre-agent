@@ -1,9 +1,11 @@
 # Runbook: Redis Cache Eviction Policy
 
 ## Severity
+
 P2 - High
 
 ## Symptoms
+
 - Redis `evicted_keys` metric is increasing steadily, visible via `INFO stats`.
 - Cache hit ratio drops below acceptable thresholds (typically below 90%).
 - Application latency increases as more requests fall through to the origin database.
@@ -11,6 +13,7 @@ P2 - High
 - Logs show increased database query volume from cache misses.
 
 ## Diagnosis Steps
+
 1. Check current memory usage and eviction policy: `redis-cli INFO memory` and `CONFIG GET maxmemory-policy`.
 2. Review the eviction policy in use. Common policies:
    - `allkeys-lru`: Evicts least recently used keys across all keys (recommended for caches).
@@ -22,6 +25,7 @@ P2 - High
 6. Check for key namespace bloat: `redis-cli DBSIZE` and compare to historical values.
 
 ## Resolution Steps
+
 1. If the eviction policy is `noeviction` or `volatile-lru` for a general cache, switch to `allkeys-lru`: `CONFIG SET maxmemory-policy allkeys-lru`.
 2. If memory is genuinely undersized, increase `maxmemory` or scale the Redis instance.
 3. If large keys are the issue, refactor application code to use more granular key structures instead of large hashes or lists.
@@ -30,6 +34,7 @@ P2 - High
 6. Persist the configuration change: update `redis.conf` or the Helm values so it survives restarts.
 
 ## Prevention / Monitoring
+
 - Alert when `evicted_keys` rate exceeds a threshold (e.g., more than 100 evictions per minute).
 - Monitor `used_memory` vs `maxmemory` and alert at 85% utilization.
 - Track cache hit ratio (`keyspace_hits / (keyspace_hits + keyspace_misses)`) and alert below 90%.

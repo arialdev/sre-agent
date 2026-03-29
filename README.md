@@ -66,9 +66,9 @@ flowchart TB
     WARN --> REPORT
 ```
 
-## Academic Evaluation
+## Goals
 
-The success of this Master's Thesis will be evaluated based on the following metrics:
+The success of this agent will be evaluated based on the following metrics:
 
 - **Diagnostic Precision**: Accuracy of the automated diagnosis compared to human-led investigations.
 - **MTTR Reduction**: The potential decrease in Mean Time To Resolution by automating the initial triage, log gathering, and runbook correlation.

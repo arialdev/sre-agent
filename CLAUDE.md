@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`sre-agent` is a Kubernetes SRE (Site Reliability Engineering) agent, developed as a thesis project for the Master's in AI at AUAX university. It employs a ReAct (Reasoning and Acting) Agent architecture backed by a RAG pipeline to diagnose cluster incidents autonomously using official runbooks as the ground truth.
+`sre-agent` is a Kubernetes SRE (Site Reliability Engineering) agent, developed as a thesis project for the Master's in AI at Universidad Alfonso X el Sabio (UAX). It employs a ReAct (Reasoning and Acting) Agent architecture backed by a RAG pipeline to diagnose cluster incidents autonomously using official runbooks as the ground truth.
 
 ### Infrastructure & Scope
 

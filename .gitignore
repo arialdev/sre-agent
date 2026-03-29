@@ -1,3 +1,6 @@
+# Project files
+tmp/
+
 # ChromaDB vector store (generated artifact)
 vectorstore/
 

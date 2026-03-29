@@ -5,15 +5,10 @@ Loads the persisted ChromaDB vectorstore and exposes a retrieval function
 that accepts a natural-language query (typically an error log line) and
 returns the most relevant runbook excerpts.
 
-The retrieve_context function is designed to be wrapped as a LangChain Tool
-so a future Agent can call it autonomously:
-
-    from langchain.tools import tool
-
-    @tool
-    def search_runbooks(query: str) -> str:
-        \"\"\"Search SRE runbooks for relevant troubleshooting steps.\"\"\"
-        return retrieve_context(query)
+This module provides:
+- retrieve_context(): raw retrieval with relevance filtering.
+- search_runbooks: a LangChain @tool wrapping retrieve_context, used by
+  the ReAct agent in src/agent.py.
 """
 
 import os
@@ -24,8 +19,8 @@ os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.tools import tool
+from langchain_openai import OpenAIEmbeddings
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 VECTORSTORE_DIR = PROJECT_ROOT / "vectorstore"
@@ -77,60 +72,25 @@ def retrieve_context(
     return "\n\n".join(formatted)
 
 
-def answer_query(
-    query: str, k: int = 3, persist_dir: Path = VECTORSTORE_DIR
-) -> str:
+@tool
+def search_runbooks(query: str) -> str:
+    """Search the SRE runbooks knowledge base for troubleshooting procedures.
+
+    Use this tool when you need to find documented procedures, diagnosis steps,
+    or resolution steps for a specific incident or error. The query should
+    describe the problem or symptoms observed.
+
+    Returns relevant runbook excerpts with source file references, or a message
+    indicating no relevant context was found.
     """
-    Answer the SRE query in natural language using the retrieved runbook context and internal knowledge.
-
-    Args:
-        query: A natural-language description or raw error log line.
-        k: Number of chunks to retrieve (default 3).
-        persist_dir: Path to the ChromaDB persistence directory.
-
-    Returns:
-        A natural language response from the LLM based on the context and its own knowledge.
-    """
-    context = retrieve_context(query, k, persist_dir)
-
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    
-    if context == "No relevant runbook context found.":
-        system_prompt = (
-            "You are an expert Kubernetes Site Reliability Engineer (SRE). "
-            "Your task is to provide a complete analysis to diagnose and resolve the issue. "
-            "Format your output entirely in Markdown. "
-            "Because no runbook context is available, rely entirely on your general SRE knowledge."
-        )
-        warning_prefix = "> [!WARNING]\n> **No runbook context found.** The following analysis is based entirely on general model knowledge.\n\n"
-    else:
-        system_prompt = (
-            "You are an expert Kubernetes Site Reliability Engineer (SRE). "
-            "Your task is to provide a complete analysis to diagnose and resolve the issue. "
-            "You must base your analysis on BOTH the provided runbook context AND your own domain knowledge. "
-            "Format your output entirely in Markdown. "
-            "Whenever you use or reference information from the runbook context, you MUST explicitly cite the source "
-            "(e.g., referencing the file path and the specific heading or section)."
-        )
-        warning_prefix = ""
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("user", "Problem: {query}\n\nRunbook Context:\n{context}")
-    ])
-    
-    chain = prompt | llm
-    
-    response = chain.invoke({"query": query, "context": context})
-    return warning_prefix + response.content
-
+    return retrieve_context(query)
 
 
 if __name__ == "__main__":
-    query = (
-        " ".join(sys.argv[1:])
-        if len(sys.argv) > 1
-        else "database connection refused error in production"
-    )
+    if len(sys.argv) <= 1:
+        print("Error: No query provided. Usage: python -m src.query \"your query\"")
+        sys.exit(1)
+        
+    query = " ".join(sys.argv[1:])
     print(f"Query: {query}\n")
-    print(answer_query(query))
+    print(retrieve_context(query))

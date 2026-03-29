@@ -30,17 +30,17 @@ mamba activate sre-agent
 
 ```bash
 python -m src.ingest                          # Ingest runbooks into ChromaDB
-python -m src.query "your error log here"     # Query the vectorstore
+python -m src.query "your error log here"     # Query the vectorstore (legacy chain)
+python -m src.agent "your error log here"     # Run the ReAct agent for diagnosis
 ```
 
 ## Architecture
 
-RAG pipeline with two modules:
+ReAct Agent backed by a RAG pipeline with three modules:
 
 - **`src/ingest.py`** — Loads Markdown runbooks from `data/`, splits with `RecursiveCharacterTextSplitter` (chunk_size=800, overlap=100, markdown-aware separators), embeds via OpenAI, persists to `vectorstore/` (ChromaDB).
-- **`src/query.py`** — Loads persisted vectorstore, exposes `retrieve_context(query) -> str` for similarity search. Returns formatted string ready for LLM context injection.
-
-Both modules expose functions designed to be wrapped as LangChain Tools for future Agent integration (`@tool` decorator).
+- **`src/query.py`** — Loads persisted vectorstore, exposes `retrieve_context(query) -> str` for similarity search with relevance filtering (L2 distance threshold). Also provides the `search_runbooks` LangChain `@tool` used by the agent.
+- **`src/agent.py`** — ReAct agent built with `langchain.agents.create_agent`. Uses `gpt-4o-mini` and the `search_runbooks` tool to autonomously reason about incidents and produce Markdown diagnostic reports.
 
 ## Data
 

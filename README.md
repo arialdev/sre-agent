@@ -1,8 +1,8 @@
 # sre-agent
 
-Proof of Concept for a RAG-based (Retrieval-Augmented Generation) SRE agent, developed as a Master's Thesis in Artificial Intelligence (Alfonso X el Sabio University).
+Proof of Concept for an AI-powered SRE (Site Reliability Engineering) agent, developed as a Master's Thesis in Artificial Intelligence (Alfonso X el Sabio University).
 
-The system ingests SRE runbooks in Markdown format, splits them into semantically coherent chunks, generates embeddings with OpenAI, and stores them in a vector database (ChromaDB). Given an error or log input, it retrieves the most relevant runbook context to assist in incident diagnosis and resolution.
+The system uses a **ReAct (Reasoning and Acting) Agent** architecture backed by a **RAG pipeline**. It ingests SRE runbooks, embeds them in a vector database, and uses an LLM-powered agent that autonomously reasons about incidents — consulting the runbooks when relevant and combining them with its own domain knowledge to produce detailed Markdown diagnostic reports.
 
 ## Core Objectives & Scope
 
@@ -66,16 +66,29 @@ Loaded 3 documents, split into N chunks.
 Vectorstore persisted to /path/to/project/vectorstore
 ```
 
-### 2. Query the vectorstore
+### 2. Run the agent
 
-Pass an error or log line as an argument and the system returns the most relevant runbook excerpts:
+Pass an error description, log line, or alert message and the ReAct agent will autonomously diagnose the issue:
 
 ```bash
-python -m src.query "ECONNREFUSED error on port 5432 in production logs"
-python -m src.query "The latency surpasses the SLO threholds"
+python -m src.agent "ECONNREFUSED error on port 5432 in production logs"
+python -m src.agent "high cpu usage in production pods"
 ```
 
-If no argument is provided, a default example query is used.
+The agent will:
+
+1. Reason about the problem
+2. Search the runbooks for relevant procedures
+3. Combine runbook knowledge with its own SRE expertise
+4. Output a structured Markdown diagnostic report
+
+### 3. Query the vectorstore (legacy)
+
+For direct retrieval without the agent loop, you can still use the legacy query pipeline:
+
+```bash
+python -m src.query "The latency surpasses the SLO thresholds"
+```
 
 ## Project Structure
 
@@ -89,23 +102,25 @@ sre-agent/
 │   └── redis_cache_eviction.md
 ├── src/
 │   ├── __init__.py
+│   ├── agent.py            # ReAct agent: reason → search runbooks → diagnose
 │   ├── ingest.py           # Ingestion pipeline: load → split → embed → persist
-│   └── query.py            # Query pipeline: load vectorstore → similarity search
+│   └── query.py            # Retrieval pipeline + search_runbooks tool
 └── vectorstore/            # Local ChromaDB store (generated, not versioned)
 ```
 
 ## Required API Keys
 
-| Service | Environment Variable | Purpose                                                       |
-|---------|----------------------|-------------------------------------------------------------- |
-| OpenAI  | `OPENAI_API_KEY`     | Embedding generation using the `text-embedding-3-small` model |
+| Service | Environment Variable | Purpose                                                                       |
+|---------|----------------------|------------------------------------------------------------------------------ |
+| OpenAI  | `OPENAI_API_KEY`     | Embedding generation (`text-embedding-3-small`) and agent LLM (`gpt-4o-mini`) |
 
 ## Main Dependencies
 
-| Package               | Purpose                                                         |
-| --------------------- | --------------------------------------------------------------- |
-| `langchain`           | Orchestration framework for RAG pipelines                       |
-| `langchain-openai`    | OpenAI integration (embeddings)                                 |
-| `langchain-community` | Loaders (DirectoryLoader, TextLoader) and vectorstores (Chroma) |
-| `chromadb`            | Local vector database with on-disk persistence                  |
-| `python-dotenv`       | Load environment variables from `.env`                          |
+| Package               | Purpose                                                           |
+| --------------------- | ----------------------------------------------------------------- |
+| `langchain`           | Agent orchestration framework (ReAct agent via `create_agent`)    |
+| `langchain-openai`    | OpenAI integration (embeddings + chat model)                      |
+| `langchain-community` | Loaders (DirectoryLoader, TextLoader)                             |
+| `langchain-chroma`    | ChromaDB vectorstore integration                                  |
+| `chromadb`            | Local vector database with on-disk persistence                    |
+| `python-dotenv`       | Load environment variables from `.env`                            |

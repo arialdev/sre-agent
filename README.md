@@ -13,6 +13,59 @@ The system uses a **ReAct (Reasoning and Acting) Agent** architecture backed by 
    - **Generation of Detailed SRE Reports** (High Priority)
    - **Execution of Corrective Actions** (Nice-to-have / Future Phase)
 
+## Architecture
+
+```mermaid
+flowchart TB
+    classDef ext fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
+    classDef storage fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef module fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    classDef io fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    classDef data fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px
+
+    subgraph OPENAI["OpenAI API"]
+        direction LR
+        EMB["text-embedding-3-small"]:::ext
+        GPT["gpt-4o-mini"]:::ext
+    end
+
+    DB[("ChromaDB — vectorstore/")]:::storage
+
+    subgraph INGESTION["Ingestion — src/ingest.py  (offline, run once)"]
+        direction LR
+        RB[/"data/ — SRE Runbooks"/]:::data
+        SPLIT["RecursiveCharacterTextSplitter\nchunk_size=800, overlap=100"]:::module
+        RB --> SPLIT
+    end
+
+    subgraph AGENT_MOD["src/agent.py — ReAct Agent"]
+        REACT["create_agent — ReAct loop"]:::module
+        WARN["_runbooks_were_found\nWarning prepend logic"]:::module
+    end
+
+    subgraph QUERY_MOD["src/query.py — Retrieval"]
+        TOOL["@tool search_runbooks\nL2 distance filter <= 1.25"]:::module
+    end
+
+    USER(["User Query / Alert"]):::io
+    REPORT(["Markdown Diagnostic Report"]):::io
+
+    %% Ingestion flow
+    SPLIT -->|"text chunks"| EMB
+    EMB -->|"vectors"| DB
+
+    %% Diagnosis flow — numbered steps show execution order
+    USER --> REACT
+    REACT -->|"① reason"| GPT
+    GPT -->|"② tool call"| TOOL
+    TOOL -->|"③ semantic search"| DB
+    DB -->|"④ top-k chunks"| TOOL
+    TOOL -->|"⑤ context"| GPT
+    GPT -->|"⑥ answer"| REACT
+    REACT --> WARN
+    WARN --> REPORT
+```
+
 ## Academic Evaluation
 
 The success of this Master's Thesis will be evaluated based on the following metrics:

@@ -2,12 +2,13 @@
 
 ## Project Structure & Module Organization
 - `src/` contains the Python package:
+  - `src/config.py` centralizes shared paths, models, and environment loading.
   - `src/ingest.py` loads Markdown runbooks from `data/`, chunks them, embeds them, and persists a local ChromaDB store in `vectorstore/`.
   - `src/query.py` provides retrieval helpers and the `search_runbooks` tool.
   - `src/agent.py` runs the ReAct incident-diagnosis agent.
 - `data/` stores source runbooks in Markdown. Keep each file focused on one incident type and use clear section headings.
 - `vectorstore/` is generated locally and should not be committed.
-- Project docs live at the repo root (`README.md`, `CLAUDE.md`, `GEMINI.md`, `TODO.md`).
+- Project docs live in `README.md`, `docs/architecture.md`, `docs/roadmap.md`, and `agent-plans/codex-plan.md`.
 
 ## Build, Test, and Development Commands
 - `mamba env create -f environment.yml` creates the Python 3.11 environment.
@@ -22,6 +23,10 @@
 - Keep module-level constants in `UPPER_SNAKE_CASE` and file names in `snake_case.py`.
 - Match the existing style: straightforward procedural code, docstrings for public helpers, and minimal abstraction.
 
+## UI / Design Rules
+- For any UI, frontend, or visual design work, follow `DESIGN.md` as the source of truth.
+- Preserve the visual system, spacing, typography, color, and component rules defined there unless the user explicitly asks to change them.
+
 ## Testing Guidelines
 - There is no automated test suite in the repository yet.
 - Validate changes manually by running `python -m src.ingest`, then `python -m src.query ...`, and finally `python -m src.agent ...`.
@@ -30,7 +35,7 @@
 ## Commit & Pull Request Guidelines
 - Follow the existing Conventional Commit style with a scope, for example: `feat(sre-agent): ...`, `docs(sre-agent): ...`, `chore(sre-agent): ...`.
 - Keep commits focused on one change.
-- PRs should describe the behavior change, list verification steps, and note any updates to `data/` or regenerated `vectorstore/` content.
+- PRs should describe the behavior change, list verification steps, and note any updates to `data/`, regenerated `vectorstore/` content, or moved docs.
 
 ## Security & Configuration Tips
 - Create a local `.env` with `OPENAI_API_KEY`; do not commit secrets.

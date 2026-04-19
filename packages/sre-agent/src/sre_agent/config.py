@@ -1,4 +1,4 @@
-"""Central configuration for the SRE agent project."""
+"""Central configuration for the `sre-agent` Python package."""
 
 from __future__ import annotations
 
@@ -9,8 +9,10 @@ from dotenv import load_dotenv
 
 os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ENV_FILE = PROJECT_ROOT / ".env"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+ROOT_ENV_FILE = REPOSITORY_ROOT / ".env"
+PACKAGE_ENV_FILE = PROJECT_ROOT / ".env"
 DATA_DIR = PROJECT_ROOT / "data"
 VECTORSTORE_DIR = PROJECT_ROOT / "vectorstore"
 
@@ -31,5 +33,6 @@ NO_CONTEXT_SENTINEL = "No relevant runbook context found."
 
 
 def load_project_env() -> None:
-    """Load project-local environment variables from the repository root."""
-    load_dotenv(ENV_FILE)
+    """Load environment variables from the repo root and package root."""
+    load_dotenv(ROOT_ENV_FILE)
+    load_dotenv(PACKAGE_ENV_FILE, override=True)

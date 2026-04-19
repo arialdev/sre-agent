@@ -8,12 +8,12 @@ returns the most relevant runbook excerpts.
 This module provides:
 - retrieve_context(): raw retrieval with relevance filtering.
 - search_runbooks: a LangChain @tool wrapping retrieve_context, used by
-  the ReAct agent in src/agent.py.
+  the ReAct agent in `sre_agent.agent`.
 """
 
+import json
 import os
 import sys
-import json
 from pathlib import Path
 from urllib import error, parse, request
 
@@ -21,7 +21,7 @@ from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from langchain_openai import OpenAIEmbeddings
 
-from src.config import (
+from sre_agent.config import (
     DEFAULT_RETRIEVAL_LIMIT,
     NO_CONTEXT_SENTINEL,
     OPENAI_EMBEDDING_MODEL,
@@ -152,11 +152,18 @@ def search_runbooks(query: str) -> str:
     return retrieve_context(query)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the CLI query entrypoint."""
     if len(sys.argv) <= 1:
-        print("Error: No query provided. Usage: python -m src.query \"your query\"")
+        print(
+            'Error: No query provided. Usage: python -m sre_agent.query "your query"'
+        )
         sys.exit(1)
-        
+
     query = " ".join(sys.argv[1:])
     print(f"Query: {query}\n")
     print(retrieve_context(query))
+
+
+if __name__ == "__main__":
+    main()

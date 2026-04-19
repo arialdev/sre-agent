@@ -3,13 +3,13 @@
 > Snapshot del plan del agente. El roadmap activo y consolidado vive en `docs/roadmap.md`.
 
 ## Summary
-La arquitectura objetivo es un **monorepo con servicios separados**: una app web fullstack en `Next.js`, un runtime del agente SRE en Python y, cuando el pipeline lo requiera, un worker de ingestión desacoplado. El backend de la web será dueño de la gestión de runbooks, versionado, publicación y estados de ingestión; el agente consultará el conocimiento publicado a través de una **API síncrona de retrieval**.
+La arquitectura objetivo es un **monorepo orientado a paquetes**: `packages/runbook-manager` para la app web fullstack, `packages/sre-agent` para el runtime Python del agente SRE y, cuando el pipeline lo requiera, otros paquetes o workers desacoplados. El backend de la web será dueño de la gestión de runbooks, versionado, publicación y estados de ingestión; el agente consultará el conocimiento publicado a través de una **API síncrona de retrieval**.
 
 La infraestructura se diseña desde el inicio con **puertos de infraestructura desacoplados** para arrancar en Azure y soportar AWS sin reescribir el dominio. La arquitectura aplicará hexagonal y principios `SOLID` de forma pragmática: puertos y adaptadores donde haya una razón real de sustitución o testabilidad, sin crear capas vacías.
 
 ## Architecture Decisions
 - `Next.js` como framework fullstack TS/JS para la app web.
-- Monorepo con ciclos de vida separados para `apps/web`, el agente Python y los workers que aparezcan.
+- Monorepo con ciclos de vida separados para `packages/runbook-manager`, el agente Python y los workers que aparezcan.
 - El agente no dependerá del filesystem del repo como fuente principal de runbooks.
 - El flujo de runbooks se divide en tres bounded contexts:
   - **Runbook Management**: CRUD, versionado, publicación y auditoría.
@@ -39,7 +39,7 @@ La infraestructura se diseña desde el inicio con **puertos de infraestructura d
 
 ## Delivery Plan
 ### Phase 1
-- Crear `apps/web` con `Next.js`.
+- Crear `packages/runbook-manager` con `Next.js`.
 - Implementar la base del dominio de runbooks con puertos y adaptadores locales.
 - Exponer APIs para alta, versionado, publicación y consulta.
 

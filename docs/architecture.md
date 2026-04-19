@@ -2,16 +2,29 @@
 
 ## Overview
 
-`sre-agent` is a Python SRE incident-diagnosis agent backed by a local retrieval pipeline. It loads Markdown runbooks from `data/`, embeds them into a ChromaDB store under `vectorstore/`, and uses a ReAct loop to answer incident questions.
+The repository is organized as a package-oriented monorepo rooted in
+`packages/`.
 
-The longer-term direction is to move runbook ownership into the web application and expose retrieval through an HTTP API, keeping the Python agent as a consumer of published knowledge.
+- `packages/runbook-manager` is a Next.js fullstack package that owns runbook
+  management, publication and retrieval APIs.
+- `packages/sre-agent` is a Python package that ingests local runbooks, queries
+  published knowledge over HTTP when available and diagnoses incidents.
 
-## Runtime Modules
+The longer-term direction remains the same: move runbook ownership into the web
+application and keep the Python agent as a consumer of published knowledge.
 
-- `src/ingest.py` loads runbooks, splits them into semantically coherent chunks, embeds them, and persists the vector store.
-- `src/query.py` loads the local vector store or queries the remote knowledge API when `RUNBOOKS_API_BASE_URL` is configured.
-- `src/agent.py` runs the ReAct diagnosis loop and formats the response as a Markdown report.
-- `src/config.py` centralizes shared paths, model names, chunking parameters, and environment loading.
+## Runtime modules
+
+- `packages/runbook-manager/app` contains the Next.js UI and route handlers.
+- `packages/runbook-manager/src/lib/runbooks` contains the runbook domain,
+  ports and local adapters.
+- `packages/sre-agent/src/sre_agent/ingest.py` loads runbooks, splits them,
+  embeds them and persists the vector store.
+- `packages/sre-agent/src/sre_agent/query.py` loads the local vector store or
+  queries the remote knowledge API when `RUNBOOKS_API_BASE_URL` is configured.
+- `packages/sre-agent/src/sre_agent/agent.py` runs the ReAct diagnosis loop.
+- `packages/sre-agent/src/sre_agent/config.py` centralizes shared paths, model
+  names, chunking parameters and environment loading.
 
 ## Operational Constants
 
@@ -22,19 +35,22 @@ The longer-term direction is to move runbook ownership into the web application 
 
 ## Data Model
 
-- `data/` contains one Markdown runbook per incident type.
-- `vectorstore/` is derived state and should be treated as disposable local output.
+- `packages/sre-agent/data/` contains one Markdown runbook per incident type.
+- `packages/sre-agent/vectorstore/` is derived state and should be treated as
+  disposable local output.
+- `packages/runbook-manager/storage/` contains local development state for the
+  web package.
 - Runbooks should keep clear headings so the text splitter preserves procedural sections.
 
 ## Project Layout
 
-- `src/` contains the Python package.
-- `data/` contains source runbooks.
-- `docs/` contains project documentation.
-- `agent-plans/` contains the persisted delivery plan.
+- `packages/` contains the executable and shared packages.
+- `docs/` contains project-wide documentation.
+- Package-specific docs live next to the package that owns them.
 
 ## Environment
 
-- Use `mamba env create -f environment.yml` to create the Python 3.11 environment.
-- Store secrets in `.env`.
+- Use `pnpm install` at the repository root for JS dependencies.
+- Use `uv sync` in `packages/sre-agent` for the Python environment.
+- Store agent secrets in the repository `.env` or `packages/sre-agent/.env`.
 - Load `OPENAI_API_KEY` locally before ingesting or querying.

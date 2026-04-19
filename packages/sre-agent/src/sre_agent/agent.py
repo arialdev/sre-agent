@@ -10,7 +10,7 @@ interprets the retrieved context, and produces a structured Markdown
 diagnostic report.
 
 Usage:
-    python -m src.agent "high cpu usage in production pods"
+    python -m sre_agent.agent "high cpu usage in production pods"
 """
 
 import sys
@@ -19,12 +19,12 @@ from langchain.agents import create_agent
 from langchain_core.messages import ToolMessage
 from langchain_openai import ChatOpenAI
 
-from src.config import (
+from sre_agent.config import (
     NO_CONTEXT_SENTINEL,
     OPENAI_CHAT_MODEL,
     load_project_env,
 )
-from src.query import search_runbooks
+from sre_agent.query import search_runbooks
 
 SYSTEM_PROMPT = """\
 You are an expert Kubernetes Site Reliability Engineer (SRE) agent.
@@ -112,11 +112,18 @@ def diagnose(query: str) -> str:
     return report
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the CLI diagnosis entrypoint."""
     if len(sys.argv) <= 1:
-        print("Error: No query provided. Usage: python -m src.agent \"your query\"")
+        print(
+            'Error: No query provided. Usage: python -m sre_agent.agent "your query"'
+        )
         sys.exit(1)
 
     query = " ".join(sys.argv[1:])
     print(f"Query: {query}\n")
     print(diagnose(query))
+
+
+if __name__ == "__main__":
+    main()

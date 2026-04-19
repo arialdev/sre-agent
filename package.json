@@ -1,0 +1,22 @@
+{
+  "name": "sre-agent-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "author": {
+    "name": "Álvaro Rivas",
+    "url": "https://alvarorivas.dev"
+  },
+  "scripts": {
+    "nx": "nx",
+    "dev:runbook-manager": "nx run runbook-manager:dev",
+    "build:runbook-manager": "nx run runbook-manager:build",
+    "start:runbook-manager": "nx run runbook-manager:start",
+    "typecheck:runbook-manager": "nx run runbook-manager:typecheck",
+    "ingest:sre-agent": "nx run sre-agent:ingest",
+    "query:sre-agent": "nx run sre-agent:query",
+    "agent:sre-agent": "nx run sre-agent:agent"
+  },
+  "devDependencies": {
+    "nx": "^21.4.1"
+  }
+}

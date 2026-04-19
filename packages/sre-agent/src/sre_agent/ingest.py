@@ -5,8 +5,8 @@ Loads Markdown files from the /data directory, splits them into
 semantically meaningful chunks, computes embeddings via OpenAI,
 and persists the resulting vectors to a local ChromaDB store.
 
-This module exposes reusable functions so a future LangChain Agent
-can trigger re-ingestion as a Tool.
+This module exposes reusable functions so a future LangChain agent
+can trigger re-ingestion as a tool.
 """
 
 from pathlib import Path
@@ -16,7 +16,7 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from src.config import (
+from sre_agent.config import (
     CHUNK_OVERLAP,
     CHUNK_SEPARATORS,
     CHUNK_SIZE,
@@ -86,5 +86,10 @@ def ingest(data_dir: Path = DATA_DIR, persist_dir: Path = VECTORSTORE_DIR) -> Ch
     return vectorstore
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the CLI ingestion entrypoint."""
     ingest()
+
+
+if __name__ == "__main__":
+    main()

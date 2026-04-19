@@ -14,7 +14,8 @@
 
 ## Phase 1 - Monorepo Platform
 
-- Create the `Next.js` fullstack app in `apps/web`.
+- Establish the `packages/*` monorepo layout with `Nx`, `pnpm` and `uv`.
+- Keep the `Next.js` fullstack app in `packages/runbook-manager`.
 - Move runbook management out of `data/*.md` and into application-owned entities.
 - Implement pragmatic hexagonal boundaries for runbook management, knowledge processing, and retrieval.
 - Add local adapters for file storage, metadata persistence, indexing, and inline job dispatch.

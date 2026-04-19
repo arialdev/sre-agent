@@ -1,0 +1,32 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "sre-agent",
+  "projectType": "application",
+  "root": "packages/sre-agent",
+  "sourceRoot": "packages/sre-agent/src",
+  "targets": {
+    "ingest": {
+      "command": "uv run python -m sre_agent.ingest",
+      "options": {
+        "cwd": "packages/sre-agent"
+      }
+    },
+    "query": {
+      "command": "uv run python -m sre_agent.query",
+      "options": {
+        "cwd": "packages/sre-agent"
+      }
+    },
+    "agent": {
+      "command": "uv run python -m sre_agent.agent",
+      "options": {
+        "cwd": "packages/sre-agent"
+      }
+    }
+  },
+  "tags": [
+    "scope:sre-agent",
+    "type:application",
+    "runtime:python"
+  ]
+}

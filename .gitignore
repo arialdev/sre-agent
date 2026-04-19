@@ -1,8 +1,22 @@
 # Project files
 tmp/
 
+# Agent
+.codex
+
+# JavaScript
+node_modules/
+.next/
+packages/runbook-manager/storage/
+packages/runbook-manager/.next/
+packages/**/node_modules/
+.nx/
+
+storage/
+
 # ChromaDB vector store (generated artifact)
 vectorstore/
+packages/sre-agent/vectorstore/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -144,6 +158,7 @@ celerybeat.pid
 .env
 .envrc
 .venv
+packages/sre-agent/.venv/
 env/
 venv/
 ENV/

@@ -1,0 +1,45 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "runbook-manager",
+  "projectType": "application",
+  "root": "packages/runbook-manager",
+  "sourceRoot": "packages/runbook-manager",
+  "targets": {
+    "dev": {
+      "command": "next dev",
+      "options": {
+        "cwd": "packages/runbook-manager"
+      },
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "command": "next build",
+      "options": {
+        "cwd": "packages/runbook-manager"
+      },
+      "outputs": [
+        "{projectRoot}/.next/**",
+        "!{projectRoot}/.next/cache/**"
+      ]
+    },
+    "start": {
+      "command": "next start",
+      "options": {
+        "cwd": "packages/runbook-manager"
+      },
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "command": "tsc --noEmit",
+      "options": {
+        "cwd": "packages/runbook-manager"
+      }
+    }
+  },
+  "tags": [
+    "scope:runbook-manager",
+    "type:application"
+  ]
+}

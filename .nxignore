@@ -1,0 +1,4 @@
+packages/runbook-manager/.next
+packages/runbook-manager/storage
+packages/sre-agent/.venv
+packages/sre-agent/vectorstore

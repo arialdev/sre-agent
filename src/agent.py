@@ -13,20 +13,18 @@ Usage:
     python -m src.agent "high cpu usage in production pods"
 """
 
-import os
 import sys
-from pathlib import Path
 
-os.environ["ANONYMIZED_TELEMETRY"] = "False"
-
-from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.messages import ToolMessage
 from langchain_openai import ChatOpenAI
 
+from src.config import (
+    NO_CONTEXT_SENTINEL,
+    OPENAI_CHAT_MODEL,
+    load_project_env,
+)
 from src.query import search_runbooks
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SYSTEM_PROMPT = """\
 You are an expert Kubernetes Site Reliability Engineer (SRE) agent.
@@ -51,7 +49,6 @@ queries if the first search does not return useful results.
 - Prioritize information from the runbooks over your own knowledge.
 """
 
-_NO_CONTEXT_SENTINEL = "No relevant runbook context found."
 _WARNING_BLOCK = (
     "> [!WARNING]\n"
     "> No internal runbook covers this issue. "
@@ -60,16 +57,9 @@ _WARNING_BLOCK = (
 
 
 def create_sre_agent():
-    """
-    Create and return the SRE ReAct agent.
-
-    The agent uses gpt-4o-mini with temperature=0 for deterministic,
-    cost-effective reasoning. It has access to the search_runbooks tool
-    for querying the organization's runbook knowledge base.
-    """
-    load_dotenv(PROJECT_ROOT / ".env")
-
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    """Create and return the SRE ReAct agent."""
+    load_project_env()
+    llm = ChatOpenAI(model=OPENAI_CHAT_MODEL, temperature=0)
 
     return create_agent(
         model=llm,
@@ -93,7 +83,7 @@ def _runbooks_were_found(messages: list) -> bool:
     ]
     if not tool_results:
         return False
-    return any(result != _NO_CONTEXT_SENTINEL for result in tool_results)
+    return any(result != NO_CONTEXT_SENTINEL for result in tool_results)
 
 
 def diagnose(query: str) -> str:

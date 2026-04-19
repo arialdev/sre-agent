@@ -13,23 +13,31 @@ This module provides:
 
 import os
 import sys
+import json
 from pathlib import Path
+from urllib import error, parse, request
 
-os.environ["ANONYMIZED_TELEMETRY"] = "False"
-
-from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from langchain_openai import OpenAIEmbeddings
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VECTORSTORE_DIR = PROJECT_ROOT / "vectorstore"
+from src.config import (
+    DEFAULT_RETRIEVAL_LIMIT,
+    NO_CONTEXT_SENTINEL,
+    OPENAI_EMBEDDING_MODEL,
+    REMOTE_REQUEST_TIMEOUT_SECONDS,
+    RETRIEVAL_DISTANCE_THRESHOLD,
+    RUNBOOKS_API_BASE_URL_ENV,
+    RUNBOOKS_API_QUERY_PATH,
+    VECTORSTORE_DIR,
+    load_project_env,
+)
 
 
 def load_vectorstore(persist_dir: Path = VECTORSTORE_DIR) -> Chroma:
     """Load the persisted ChromaDB vectorstore from disk."""
-    load_dotenv()
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    load_project_env()
+    embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
     return Chroma(
         persist_directory=str(persist_dir),
         embedding_function=embeddings,
@@ -37,7 +45,9 @@ def load_vectorstore(persist_dir: Path = VECTORSTORE_DIR) -> Chroma:
 
 
 def retrieve_context(
-    query: str, k: int = 3, persist_dir: Path = VECTORSTORE_DIR
+    query: str,
+    k: int = DEFAULT_RETRIEVAL_LIMIT,
+    persist_dir: Path = VECTORSTORE_DIR,
 ) -> str:
     """
     Retrieve relevant runbook context for a given query.
@@ -53,15 +63,22 @@ def retrieve_context(
         context. The function returns str (not list[Document]) so it can be
         directly wrapped as a LangChain Tool with zero glue code.
     """
+    load_project_env()
+    remote_base_url = os.getenv(RUNBOOKS_API_BASE_URL_ENV)
+    if remote_base_url:
+        remote_context = retrieve_remote_context(remote_base_url, query, k)
+        if remote_context is not None:
+            return remote_context
+
     vectorstore = load_vectorstore(persist_dir)
-    # Use similarity_search_with_score to get distances (L2 by default, lower is better)
     results = vectorstore.similarity_search_with_score(query, k=k)
 
-    # Filter out chunks that are practically irrelevant (distance > 1.25 is far in L2 space)
-    filtered_results = [doc for doc, score in results if score <= 1.25]
+    filtered_results = [
+        doc for doc, score in results if score <= RETRIEVAL_DISTANCE_THRESHOLD
+    ]
 
     if not filtered_results:
-        return "No relevant runbook context found."
+        return NO_CONTEXT_SENTINEL
 
     formatted = []
     for i, doc in enumerate(filtered_results, 1):
@@ -69,6 +86,55 @@ def retrieve_context(
         formatted.append(
             f"--- Result {i} (source: {source}) ---\n{doc.page_content}"
         )
+    return "\n\n".join(formatted)
+
+
+def retrieve_remote_context(
+    base_url: str,
+    query: str,
+    k: int = DEFAULT_RETRIEVAL_LIMIT,
+) -> str | None:
+    """
+    Query the external runbook knowledge API.
+
+    Returns:
+        - A formatted retrieval context string when the request succeeds.
+        - The sentinel string when the API returns no results.
+        - None when the remote call fails, allowing local fallback.
+    """
+    normalized_base_url = base_url.rstrip("/")
+    endpoint = parse.urljoin(
+        f"{normalized_base_url}/", RUNBOOKS_API_QUERY_PATH
+    )
+    payload = json.dumps({"query": query, "limit": k}).encode("utf-8")
+    http_request = request.Request(
+        endpoint,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(
+            http_request, timeout=REMOTE_REQUEST_TIMEOUT_SECONDS
+        ) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except (error.URLError, TimeoutError, json.JSONDecodeError):
+        return None
+
+    results = body.get("results", [])
+    if not results:
+        return NO_CONTEXT_SENTINEL
+
+    formatted = []
+    for index, result in enumerate(results, 1):
+        title = result.get("title", "unknown")
+        source_filename = result.get("sourceFilename", "unknown")
+        excerpt = result.get("excerpt", "")
+        formatted.append(
+            f"--- Result {index} (source: {title} / {source_filename}) ---\n{excerpt}"
+        )
+
     return "\n\n".join(formatted)
 
 

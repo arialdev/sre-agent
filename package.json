@@ -2,6 +2,9 @@
   "name": "sre-agent-monorepo",
   "private": true,
   "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": "^24.0.0"
+  },
   "author": {
     "name": "Álvaro Rivas",
     "url": "https://alvarorivas.dev"
@@ -17,6 +20,6 @@
     "agent:sre-agent": "nx run sre-agent:agent"
   },
   "devDependencies": {
-    "nx": "^21.4.1"
+    "nx": "22.6.5"
   }
 }

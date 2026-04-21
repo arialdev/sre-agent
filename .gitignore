@@ -6,6 +6,7 @@ node_modules/
 .next/
 packages/runbook-manager/storage/
 packages/runbook-manager/.next/
+packages/runbook-manager/tsconfig.tsbuildinfo
 packages/**/node_modules/
 .nx/
 

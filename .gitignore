@@ -1,9 +1,6 @@
 # Project files
 tmp/
 
-# Agent
-.codex
-
 # JavaScript
 node_modules/
 .next/

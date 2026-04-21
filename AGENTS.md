@@ -13,7 +13,7 @@
 - Project docs live in `README.md`, `docs/architecture.md`, and `docs/roadmap.md`. Package-specific docs live next to the package that owns them.
 
 ## Build, Test, and Development Commands
-- `pnpm install` installs root tooling and JS package dependencies.
+- `pnpm install` installs root tooling and JS package dependencies. Always try to install the latest versions of packages if possible.
 - `pnpm nx run runbook-manager:dev` starts the Next.js package.
 - `pnpm nx run runbook-manager:build` builds the web package.
 - `cd packages/sre-agent && uv sync` creates the Python environment.
